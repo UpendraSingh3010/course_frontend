@@ -1,7 +1,6 @@
 import AddCourse from "./components/AddCourse"
 import AddInstance from "./components/AddInstance"
 import Detail from "./components/Detail"
-import FetchCourses, { FetchInstances } from "./components/FetchCourses"
 import Home from "./components/Home"
 import Instance from "./components/Instance"
 import Navbar from "./components/Navbar"
@@ -11,8 +10,6 @@ function App() {
   return (
     <>
     <Navbar />
-    <FetchCourses/>
-    <FetchInstances/>
       <Routes>
         <Route path="/" element= {<Home/>} />
         <Route path="/detail" element= {<Detail/>}/>

@@ -1,12 +1,39 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const Home = () => {
   const navigate = useNavigate();
 
-  const courses = useSelector((store) => store.courses.list);
-  console.log("courses come", courses)
+  const [courses, setCourses]= useState([]);
+
+  const API = "http://localhost:8080/api";
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    const res = await axios.get(`${API}/v1/courses`);
+    console.log("All courses in home are ", res.data)
+    setCourses(res.data);
+  };
+
+  const handleDeleteBtn = async (e) =>{
+    const courseId = e.currentTarget.dataset.id;
+    console.log("Delete the course ",courseId)
+    try {
+      await axios.delete(`${API}/v1/courses/${courseId}`);
+      fetchCourses();
+    } catch (err) {
+      alert(
+        err.response.data.message || "Cannot delete course due to dependency"
+      );
+    }
+  }
 
   return (
     <div className="p-6">
@@ -39,7 +66,7 @@ const Home = () => {
               >
                 Detail
               </button>
-              <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+              <button data-id={course.id} onClick={handleDeleteBtn} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
                 Delete
               </button>
               <button

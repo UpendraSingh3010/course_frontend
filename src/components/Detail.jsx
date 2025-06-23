@@ -1,15 +1,48 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Detail = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const course = location.state?.course;
+  const courseId = location.state?.course.courseId;
 
-  if (!course) {
+  const API = "http://localhost:8080/api";
+
+  const [course, setCourse] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCourseById = async () => {
+      try {
+        const res = await axios.get(`${API}/v1/courses/${courseId}`);
+        setCourse(res.data);
+      } catch (err) {
+        setError("Failed to fetch course details.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (courseId) {
+      fetchCourseById();
+    } else {
+      setError("No course ID provided.");
+      setLoading(false);
+    }
+  }, [courseId]);
+
+  if (loading) {
+    return <div className="p-6 text-center">Loading...</div>;
+  }
+
+  if (error || !course) {
     return (
       <div className="p-6 text-center text-red-600">
-        <p>No course data found.</p>
+        <p>{error || "No course data found."}</p>
         <button
           onClick={() => navigate(-1)}
           className="mt-4 px-4 py-2 bg-[#002B5B] text-white rounded hover:bg-[#003b7a]"
@@ -32,7 +65,10 @@ const Detail = () => {
           <span className="font-semibold">Description:</span> {course.description}
         </p>
         <p>
-          <span className="font-semibold">Prerequisites:</span> {course.prerequisites || 'None'}
+          <span className="font-semibold">Prerequisites:</span>{" "}
+          {course.prerequisites?.length
+            ? course.prerequisites.join(", ")
+            : "None"}
         </p>
       </div>
 

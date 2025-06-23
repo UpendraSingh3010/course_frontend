@@ -1,35 +1,60 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { instancesActions } from "../store/instanceSlice";
+import axios from "axios";
 
 const AddInstance = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [course, setCourse] = useState([]);
 
-  const course = state?.course;
+  const API = "http://localhost:8080/api";
+
+  const courseId = state?.course.courseId;
+
+  useEffect(() => {
+    const fetchCoursesbyId = async () => {
+      try {
+        const res = await axios.get(`${API}/v1/courses/${courseId}`);
+        setCourse(res.data);
+      } catch (error) {
+        console.error("Failed to fetch course", error);
+      }
+    };
+
+    if (courseId) {
+      fetchCoursesbyId();
+    }
+  }, [courseId]);
 
   const yearRef = useRef(null);
   const semRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newInstance = {
       courseId: course?.id || "",
       year: yearRef.current.value,
       semester: semRef.current.value,
-      title:course?.title,
-      description:course?.description,
-      prerequisites:course?.prerequisites
+      title: course?.title,
+      description: course?.description,
+      prerequisites: course?.prerequisites,
     };
-    dispatch(instancesActions.addNewInstance(newInstance));
 
-    console.log("New Instance:", newInstance);
-    alert("Instance added successfully!");
-    navigate(-1); // go back
+    try {
+      const response = await axios.post(`${API}/v1/instances`, newInstance);
+      console.log("Instance created:", response.data);
+
+      alert("Instance added successfully!");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error adding instance:", error);
+      alert("Failed to add instance.");
+    }
   };
+
 
   if (!course) {
     return (
@@ -106,5 +131,4 @@ const AddInstance = () => {
     </div>
   );
 };
-
 export default AddInstance;
